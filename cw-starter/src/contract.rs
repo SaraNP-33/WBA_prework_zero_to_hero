@@ -53,4 +53,37 @@ pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use cosmwasm_std::attr; // helper to construct an attribute e.g. ("action", "instantiate")
+    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info}; // mock functions to mock an environment, message info, dependencies
+    use crate::contract::instantiate; // the contract instantiate function
+    use crate::msg::InstantiateMsg; // our instantate method
+
+    // Two fake addresses we will use to mock_info
+    pub const ADDR1: &str = "addr1";
+    pub const ADDR2: &str = "addr2";
+    //need this to make fn and the variables work
+    #[test]
+    fn test_instantiate(){
+         // Mock the dependencies, must be mutable so we can pass it as a mutable, empty vector means our contract has no balance
+         let mut deps = mock_dependencies();
+         // Mock the contract environment, contains the block info, contract address, etc.
+         let env = mock_env();
+         // Mock the message info, ADDR1 will be the sender, the empty vec means we sent no funds.
+         let info = mock_info(ADDR1, &vec![]);
+
+          // Create a message where we (the sender) will be an admin
+        let msg = InstantiateMsg { admin: None };
+        // Call instantiate, unwrap to assert success
+        let res = instantiate(deps.as_mut(), env, info, msg).unwrap();
+
+        //a macro used in testing to assert two values are the same. It will panic otherwise and fail the test.
+        assert_eq!(
+            //A Response object has a member variable which is a vector of attributes (Vec<Attribute>)
+            // in this case we access it using res.attributes
+             //we want to assert that this is equal to another vector of attributes
+            res.attributes,
+            vec![attr("action", "instantiate"), attr("admin", ADDR1)]
+        )
+    }
+}
