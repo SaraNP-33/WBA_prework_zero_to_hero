@@ -1,5 +1,7 @@
 # WBA_prework_zero_to_hero
 
+Zero to Hero prerequisite completed @Japarjam
+
 ## Commands
 
 As suggested by the tutorial, I ran all the commands after finishing and made sure there were no warnings.
