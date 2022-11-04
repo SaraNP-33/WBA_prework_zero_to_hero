@@ -22,7 +22,7 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     //setting our Config
     //unwrap our Option field and if it is null sets it to info.sender.to_string() which is the message sender's address as a string.
-   let admin =msg.admin.unwrap_or(info.sender.to_string());
+   let admin =msg.admin.unwrap_or_else(||info.sender.to_string());
    //It then validates the address by passing it as a &str to the deps.api.addr_validate() function. This validates if an address is valid and throws an error otherwise. The ? is an error handler
    let validated_admin=deps.api.addr_validate(&admin)?;
    //The next line creates a Config struct with our validated admin address as the admin. We have to clone the validated address to avoid moving values.
@@ -93,7 +93,7 @@ pub fn execute(
         let poll = POLLS.may_load(deps.storage, poll_id.clone())?;
 
         if poll.is_none() {
-            return Err(ContractError::PollNotFound { poll_id: poll_id });
+            return Err(ContractError::PollNotFound { poll_id});
         }
 
         match poll {
@@ -211,7 +211,7 @@ mod tests {
     fn test_instantiate_with_admin(){
         let mut deps = mock_dependencies();
         let env =mock_env();
-        let info =mock_info(ADDR1, &vec![]);
+        let info =mock_info(ADDR1, &[]);
 
         //use the Some structure to make ADDR2 the mock admin
         let msg = InstantiateMsg {admin: Some(ADDR2.to_string()),};
@@ -229,7 +229,7 @@ mod tests {
 fn test_execute_create_poll_valid() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -252,7 +252,7 @@ fn test_execute_create_poll_valid() {
 fn test_execute_create_poll_invalid() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -281,7 +281,7 @@ fn test_execute_create_poll_invalid() {
 fn test_execute_vote_valid() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -303,14 +303,14 @@ fn test_execute_vote_valid() {
         poll_id: "some_id".to_string(),
         vote: "Juno".to_string(),
     };
-    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+    let _res = execute(deps.as_mut(), env, info, msg).unwrap();
 }
 
 #[test]
 fn test_execute_vote_invalid() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -349,7 +349,7 @@ fn test_execute_vote_invalid() {
 fn test_query_all_polls() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -385,7 +385,7 @@ fn test_query_all_polls() {
 fn test_query_poll() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -400,7 +400,7 @@ fn test_query_poll() {
             "Osmosis".to_string(),
         ],
     };
-    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     // Query for the poll that exists
     let msg = QueryMsg::Poll {
@@ -415,7 +415,7 @@ fn test_query_poll() {
     let msg = QueryMsg::Poll {
         poll_id: "some_id_not_exist".to_string(),
     };
-    let bin = query(deps.as_ref(), env.clone(), msg).unwrap();
+    let bin = query(deps.as_ref(), env, msg).unwrap();
     let res: PollResponse = from_binary(&bin).unwrap();
     // Expect none
     assert!(res.poll.is_none());
@@ -424,7 +424,7 @@ fn test_query_poll() {
 fn test_query_vote() {
     let mut deps = mock_dependencies();
     let env = mock_env();
-    let info = mock_info(ADDR1, &vec![]);
+    let info = mock_info(ADDR1, &[]);
     // Instantiate the contract
     let msg = InstantiateMsg { admin: None };
     let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
@@ -446,7 +446,7 @@ fn test_query_vote() {
         poll_id: "some_id_1".to_string(),
         vote: "Juno".to_string(),
     };
-    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     // Query for a vote that exists
     let msg = QueryMsg::Vote {
