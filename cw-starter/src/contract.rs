@@ -62,7 +62,7 @@ mod tests {
     // Two fake addresses we will use to mock_info
     pub const ADDR1: &str = "addr1";
     pub const ADDR2: &str = "addr2";
-    //need this to make fn and the variables work
+    //need this to make fn and the variables work -macro
     #[test]
     fn test_instantiate(){
          // Mock the dependencies, must be mutable so we can pass it as a mutable, empty vector means our contract has no balance
