@@ -249,7 +249,6 @@ fn test_execute_create_poll_invalid() {
 }
 
 #[test]
-#[test]
 fn test_execute_vote_valid() {
     let mut deps = mock_dependencies();
     let env = mock_env();
@@ -276,13 +275,43 @@ fn test_execute_vote_valid() {
         vote: "Juno".to_string(),
     };
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+}
 
-    // Change the vote
+#[test]
+fn test_execute_vote_invalid() {
+    let mut deps = mock_dependencies();
+    let env = mock_env();
+    let info = mock_info(ADDR1, &vec![]);
+    // Instantiate the contract
+    let msg = InstantiateMsg { admin: None };
+    let _res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // Create the vote, some_id poll is not created yet.
     let msg = ExecuteMsg::Vote {
         poll_id: "some_id".to_string(),
-        vote: "Osmosis".to_string(),
+        vote: "Juno".to_string(),
     };
-    let _res = execute(deps.as_mut(), env, info, msg).unwrap();
+    // Unwrap to assert error
+    let _err = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap_err();
+
+    // Create the poll
+    let msg = ExecuteMsg::CreatePoll {
+        poll_id: "some_id".to_string(),
+        question: "What's your favourite Cosmos coin?".to_string(),
+        options: vec![
+            "Cosmos Hub".to_string(),
+            "Juno".to_string(),
+            "Osmosis".to_string(),
+        ],
+    };
+    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // Vote on a now existing poll but the option "DVPN" does not exist
+    let msg = ExecuteMsg::Vote {
+        poll_id: "some_id".to_string(),
+        vote: "DVPN".to_string(),
+    };
+    let _err = execute(deps.as_mut(), env, info, msg).unwrap_err();
 }
 
 
