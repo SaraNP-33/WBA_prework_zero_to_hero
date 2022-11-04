@@ -86,4 +86,21 @@ mod tests {
             vec![attr("action", "instantiate"), attr("admin", ADDR1)]
         )
     }
+    //Learning Exercise - Mock test for InstantiateMsg
+    #[test]
+    fn test_instantiate_with_admin(){
+        let mut deps = mock_dependencies();
+        let env =mock_env();
+        let info =mock_info(ADDR1, &vec![]);
+
+        //use the Some structure to make ADDR2 the mock admin
+        let msg = InstantiateMsg {admin: Some(ADDR2.to_string()),};
+        let res = instantiate(deps.as_mut(), env, info, msg).unwrap();
+
+          // Assert admin is ADDR2 
+          assert_eq!(
+            res.attributes,
+            vec![attr("action", "instantiate"), attr("admin", ADDR2),]
+        );
+    }
 }
