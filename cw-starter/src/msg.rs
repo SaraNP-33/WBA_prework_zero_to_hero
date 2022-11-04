@@ -1,25 +1,26 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::state::{Poll, Ballot};
+use crate::state::{Ballot, Poll};
 
 //This is how we communicaate with your contract
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq,Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InstantiateMsg {
     pub admin: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq,Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    CreatePoll{ //{ExecuteMsg ::CreatePoll{poll_id:"1", question:"something", options:["1", "2", "3"]}}
+    CreatePoll {
+        //{ExecuteMsg ::CreatePoll{poll_id:"1", question:"something", options:["1", "2", "3"]}}
         poll_id: String,
         question: String,
         options: Vec<String>,
     },
-    Vote{
+    Vote {
         poll_id: String,
         vote: String,
     },
@@ -33,17 +34,12 @@ pub enum ExecuteMsg {
     // }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq,Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     AllPolls {},
-    Poll {
-        poll_id: String,
-    },
-    Vote {
-        poll_id: String,
-        address: String,
-    },
+    Poll { poll_id: String },
+    Vote { poll_id: String, address: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
@@ -51,12 +47,12 @@ pub struct AllPollsResponse {
     pub polls: Vec<Poll>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq,Eq,JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 pub struct PollResponse {
     pub poll: Option<Poll>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq,Eq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 pub struct VoteResponse {
     pub vote: Option<Ballot>,
 }
@@ -68,6 +64,6 @@ pub struct VoteResponse {
 //     val: String,
 // }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq,Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum MigrateMsg {}
