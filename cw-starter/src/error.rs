@@ -11,4 +11,7 @@ pub enum ContractError {
 
     #[error("Too many poll options")]
     TooManyOptions {},
+
+    #[error("Poll not found with ID={poll_id:?}")]
+    PollNotFound { poll_id: String },
 }
