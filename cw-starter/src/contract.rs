@@ -5,7 +5,7 @@ use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{Config, CONFIG};
+use crate::state::{Config, CONFIG, Poll, POLLS};
 
 
 const CONTRACT_NAME: &str = "crates.io:cw-starter";
@@ -38,14 +38,49 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
+//This function will becoming a matchin case redirecting approproate messages to appropriate function calls
 pub fn execute(
-    _deps: DepsMut,
-    _env: Env,
-    _info: MessageInfo,
-    _msg: ExecuteMsg,
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
-    unimplemented!()
+    match msg {
+        ExecuteMsg::CreatePoll { poll_id, question, options }=> execute_create_poll(deps, env, info, poll_id,question,options),
+        ExecuteMsg::Vote { poll_id, vote } => unimplemented!()
 }
+    } 
+    fn execute_create_poll(
+        deps: DepsMut,
+        _env: Env,
+        info: MessageInfo,
+        poll_id: String,
+        question: String,
+        options: Vec<String>,
+    ) -> Result<Response, ContractError>{
+        if options.len() > 10 {
+            return Err(ContractError::TooManyOptions {});
+        }
+        let mut opts: Vec<(String, u64)> = vec![];
+        for option in options {
+            opts.push((option, 0));
+        }
+        //constructing the poll
+        let poll = Poll {
+            creator: info.sender,
+            question,
+            options: opts
+        };
+        //giving it a key and saving it to storage to be able to use it
+        POLLS.save(deps.storage, poll_id, &poll)?;
+
+        //we caan remove  unimplemented!() and return a response
+        Ok(Response::new()
+        .add_attribute("action", "execute_create_poll")
+        .add_attribute("number_of_options", poll.options.len().to_string())
+        .add_attribute("owner", poll.creator))
+    }
+    
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(_deps: Deps, _env: Env, _msg: QueryMsg) -> StdResult<Binary> {
